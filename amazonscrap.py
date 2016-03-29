@@ -7,8 +7,15 @@ import pdb
 amzn = AmazonScraper("AKIAJN3L3SMT3S7K4MBQ", "Qv1QZLJJw3kKr7K4HqKycd285LoxwcGwBrptoC9/", "amazonscrap-20")
 api = amazonproduct.API(locale ='us',access_key_id= "AKIAJN3L3SMT3S7K4MBQ",secret_access_key = "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",associate_tag = "amazonscrap-20")
 
-
-def main():        
+def price_offers(asin):
+    str_asin = str(asin)
+    node = api.item_lookup(ItemId=str_asin, ResponseGroup='Offers', Condition='All', MerchantId='All')
+    for a in node.Items.Item.Offers.Offer:
+        price = a.OfferListing.Price.FormattedPrice
+        #print a.OfferListing.Price.FormattedPrice
+    return price
+def main():
+    price_offers("B01637RFR4")
     items = api.item_search('Software', Sort = "salesrank", ItemPage = 1 ,Keywords = " ")
     print len(items)
     p = " "
@@ -49,23 +56,26 @@ def main():
     pidList = []
     pTitleList = []
     catList = []
+    priceList = []
     result = api.browse_node_lookup(root_ids[0])
     for child in result.BrowseNodes.BrowseNode.Children.BrowseNode:
          print '(%s %s)' % (child.Name, child.BrowseNodeId)
-         bId = child.BrowseNodeId
-         catname = child.Name.text
+         bId = child.BrowseNodeId       
+         catname = child.Name.text         
          #getresults(child.BrowseNodeId.text,child.Name)
          items = api.item_search('Software', Sort = "salesrank", ItemPage = 1 ,BrowseNode = bId)
          for product in items:
+             print product.ASIN.text.encode('utf-8')
+             print product.ItemAttributes.Title.text.encode('utf-8')
              index = index + 1
              pindex.append(index)
              pidList.append(product.ASIN.text.encode('utf-8'))
              pTitleList.append(product.ItemAttributes.Title.text.encode('utf-8'))
              catList.append(catname.encode('utf-8'))            
-         
+             priceList.append(price_offers(product.ASIN.text))
         
-    ProductDataSet = list(zip(pindex,pidList,pTitleList,catList))
-    df = pd.DataFrame(data = ProductDataSet, columns=['Index', 'ProductID','ProductTitle','Category'])
+    ProductDataSet = list(zip(pindex,pidList,pTitleList,catList,priceList))
+    df = pd.DataFrame(data = ProductDataSet, columns=['Index', 'ProductID','ProductTitle','Category','Price'])
     print df
     df.to_csv('productdataset.csv',index=False,header=True)
     
