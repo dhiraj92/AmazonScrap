@@ -9,13 +9,17 @@ api = amazonproduct.API(locale ='us',access_key_id= "AKIAJN3L3SMT3S7K4MBQ",secre
 
 def price_offers(asin):
     str_asin = str(asin)
-    node = api.item_lookup(ItemId=str_asin, ResponseGroup='Offers', Condition='All', MerchantId='All')
-    for a in node.Items.Item.Offers.Offer:
-        price = a.OfferListing.Price.FormattedPrice
-        #print a.OfferListing.Price.FormattedPrice
+    try:
+        node = api.item_lookup(ItemId=str_asin, ResponseGroup='Offers', Condition='All', MerchantId='All')        
+        for a in node.Items.Item.Offers.Offer:
+            price = a.OfferListing.Price.FormattedPrice
+            #print a.OfferListing.Price.FormattedPrice
+    except Exception:
+        print "not found"
+        return "NaN"
     return price
 def main():
-    price_offers("B01637RFR4")
+    print price_offers("B0017JHVNW")
     items = api.item_search('Software', Sort = "salesrank", ItemPage = 1 ,Keywords = " ")
     print len(items)
     p = " "
