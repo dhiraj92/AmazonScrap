@@ -6,11 +6,11 @@ import pdb
 
 f = open('access.txt', 'r')
 accesslist = f.readlines()
-print accesslist
+#print accesslist
 
-print len(accesslist[0])
+#print len(accesslist[0])
 keyid = accesslist[0].strip("\n")
-print len(keyid)
+#print len(keyid)
 accesskey = accesslist[1].strip("\n")
 tag = accesslist[2].strip("\n")
 amzn = AmazonScraper(keyid,accesskey,tag)
@@ -22,7 +22,7 @@ def price_offers(asin):
         node = api.item_lookup(ItemId=str_asin, ResponseGroup='Offers', Condition='All', MerchantId='All')        
         for a in node.Items.Item.Offers.Offer:
             price = a.OfferListing.Price.FormattedPrice
-            #print a.OfferListing.Price.FormattedPrice
+            print a.OfferListing.Price.FormattedPrice
     except Exception:
         print "not found"
         return "NaN"
@@ -48,21 +48,32 @@ def large_data(asin):
     try:
         node = api.item_lookup(ItemId=str_asin, ResponseGroup='Large', Condition='All', MerchantId='All')
         print node
-        print "releasedate is", node.Items.ItemAttributes.ReleaseDate
+        rs = amzn.reviews(ItemId=str_asin)
+        r = amzn.review(Id=rs.ids[0])
+        reviewRating = r.rating
+        
+        pdb.set_trace()
+         
+        print "releasedate is", node.Items.Item.ItemAttributes.ReleaseDate
+        print "sales rank is", node.Items.Item.SalesRank
+        #it is full html style, html can be cleaned using beautifulsoup
+        #print "product description is", node.Items.Item.EditorialReviews.EditorialReview.Content
+        
         for a in node.Items.Item.SalesRank:
             price = a
-            print "large data is", price
-            
+            print "large data is", price            
             #print a.OfferListing.Price.FormattedPrice
     except Exception:
-        print "not found"
+        print "exception not found"
         return "NaN"
     return price    
 
 def main():
     print price_offers("B01637RFR4")
-    print price_offers("B00UB76290")
+    print sales_rank("B01637RFR4")
     print large_data("B01637RFR4")
+    print price_offers("B00UB76290")
+    #print large_data("B01637RFR4")
                    
             
 if __name__ == "__main__":
